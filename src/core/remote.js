@@ -1968,10 +1968,7 @@ function createPathFind(options_, callback) {
         callback(null, data);
       }
     });
-    pathFind.on('error', (error) => {
-      pathFind.close();
-      callback(error);
-    });
+    pathFind.on('error', callback);
   }
 
   this._cur_path_find = pathFind;

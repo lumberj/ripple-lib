@@ -62,6 +62,10 @@ Request.prototype.request = function(servers, callback) {
   return this;
 };
 
+function isResponseNotError(res) {
+  return typeof res === 'object' && !res.hasOwnProperty('error');
+}
+
 /**
  * Broadcast request to all servers, filter responses if a function is
  * provided. Return first response that satisfies the filter. Pre-filter
@@ -73,22 +77,23 @@ Request.prototype.request = function(servers, callback) {
  * @param [Function] fn
  */
 
+
 Request.prototype.filter =
 Request.prototype.addFilter =
-Request.prototype.broadcast = function(filterFn=Boolean) {
+Request.prototype.broadcast = function(isResponseSuccess = isResponseNotError) {
   const self = this;
 
   if (!this.requested) {
     // Defer until requested, and prevent the normal request() from executing
     this.once('before', function() {
       self.requested = true;
-      self.broadcast(filterFn);
+      self.broadcast(isResponseSuccess);
     });
     return this;
   }
 
   let lastResponse = new Error('No servers available');
-  let connectTimeouts = { };
+  const connectTimeouts = { };
   const emit = this.emit;
 
   this.emit = function(event, a, b) {
@@ -110,7 +115,7 @@ Request.prototype.broadcast = function(filterFn=Boolean) {
       // Listen for proxied success/error event and apply filter
       self.once('proposed', function(res) {
         lastResponse = res;
-        callback(filterFn(res));
+        callback(isResponseSuccess(res));
       });
 
       return server._request(self);

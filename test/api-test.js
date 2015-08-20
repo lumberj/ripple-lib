@@ -552,6 +552,14 @@ describe('RippleAPI', function() {
     });
   });
 
+  it('getPaths - error: srcActNotFound', function() {
+    const pathfind = _.assign({}, requests.getPaths.normal,
+      {source: {address: addresses.NOTFOUND}});
+    return this.api.getPaths(pathfind).catch(error => {
+      assert(error instanceof this.api.errors.NotFoundError);
+    });
+  });
+
   it('getLedgerVersion', function() {
     assert.strictEqual(this.api.getLedgerVersion(), 8819951);
   });
